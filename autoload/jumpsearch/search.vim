@@ -48,7 +48,7 @@ function! jumpsearch#search#do_search()
   endfor
   call jumpsearch#util#move_cursor(initial_cursor)
   nohlsearch
-  redraw!
+  redraw
 
   let jump_index = jumpsearch#tags#get_jump_index_from_user(num_jump_tags)
   

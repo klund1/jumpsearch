@@ -41,6 +41,6 @@ function! jumpsearch#highlighting#search_and_highlight(search, match_group)
           \ match_position, len(a:search), a:match_group)
   endwhile
   nohlsearch
-  redraw!
+  redraw
   return matches
 endfunction
