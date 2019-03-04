@@ -3,9 +3,9 @@ function! jumpsearch#search#run()
   let initial_scroll_offset = &so
   set so=0
 
-  let initial_cursor = jumpsearch#util#get_cursor()
+  let b:jumpsearch_initial_cursor = jumpsearch#util#get_cursor()
   if (!jumpsearch#search#do_search())
-    call jumpsearch#util#move_cursor(initial_cursor)
+    call jumpsearch#util#move_cursor(b:jumpsearch_initial_cursor)
   endif
 
   call jumpsearch#highlighting#clear_highlighting()
@@ -13,8 +13,7 @@ function! jumpsearch#search#run()
 endfunction
 
 function! jumpsearch#search#do_search()
-  let initial_cursor = jumpsearch#util#get_cursor()
-
+  call jumpsearch#highlighting#init()
   let search = ""
   let char = nr2char(getchar())
   while char != ""
@@ -46,9 +45,7 @@ function! jumpsearch#search#do_search()
           \ match_position, len(jump_tag), 'JumpSearchJump')
     let index += 1
   endfor
-  call jumpsearch#util#move_cursor(initial_cursor)
-  nohlsearch
-  redraw
+  call jumpsearch#util#redraw()
 
   let jump_index = jumpsearch#tags#get_jump_index_from_user(num_jump_tags)
   

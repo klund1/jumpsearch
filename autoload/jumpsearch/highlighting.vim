@@ -1,3 +1,9 @@
+function! jumpsearch#highlighting#init()
+  hi JumpSearchPending ctermfg=0 ctermbg=222 cterm=NONE
+  hi JumpSearchEnd ctermfg=0 ctermbg=222 cterm=NONE
+  hi JumpSearchJump ctermfg=0 ctermbg=red cterm=NONE
+endfunction
+
 function! jumpsearch#highlighting#clear_highlighting()
   if !exists('b:jumpsearch_match_ids')
     return
@@ -40,7 +46,6 @@ function! jumpsearch#highlighting#search_and_highlight(search, match_group)
     call jumpsearch#highlighting#highlight(
           \ match_position, len(a:search), a:match_group)
   endwhile
-  nohlsearch
-  redraw
+  call jumpsearch#util#redraw()
   return matches
 endfunction

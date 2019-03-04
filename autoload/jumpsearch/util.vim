@@ -27,3 +27,8 @@ function! jumpsearch#util#move_cursor(position)
   call cursor(a:position[0], a:position[1])
 endfunction
 
+function! jumpsearch#util#redraw()
+  call jumpsearch#util#move_cursor(b:jumpsearch_initial_cursor)
+  nohlsearch
+  redraw
+endfunction
