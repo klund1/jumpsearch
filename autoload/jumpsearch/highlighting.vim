@@ -35,7 +35,9 @@ function! jumpsearch#highlighting#highlight(position, length, match_group)
 endfunction
 
 function! jumpsearch#highlighting#search_and_highlight(search, match_group)
-  call jumpsearch#highlighting#clear_highlighting()
+  if g:jumpsearch_inc_search
+    call jumpsearch#highlighting#clear_highlighting()
+  endif
   let matches = []
   for window in jumpsearch#util#get_all_windows()
     call jumpsearch#util#move_to_window(window)

@@ -28,9 +28,7 @@ function! jumpsearch#util#get_cursor()
 endfunction
 
 function! jumpsearch#util#get_all_windows()
-  let windows = []
-  windo let windows += [winnr()]
-  return windows
+  return range(1,winnr("$"))
 endfunction
 
 function! jumpsearch#util#move_to_window(window)
@@ -38,7 +36,9 @@ function! jumpsearch#util#move_to_window(window)
 endfunction
 
 function! jumpsearch#util#move_cursor(position)
-  call jumpsearch#util#move_to_window(a:position.window)
+  if winnr() != a:position.window
+    call jumpsearch#util#move_to_window(a:position.window)
+  endif
   call cursor(a:position.line, a:position.collumn)
 endfunction
 
