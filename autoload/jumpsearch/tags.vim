@@ -1,3 +1,26 @@
+function!jumpsearch#tags#add_tag(position, tag)
+  set conceallevel=1
+  set concealcursor=nc
+  hi! link Conceal JumpSearchJump
+
+
+  let index = 0
+  for c in split(a:tag, '\zs')
+    let pattern = ''
+    let pattern .= '\%' . a:position.line . 'l'
+    let pattern .= '\%>' . (a:position.collumn - 1 + index) . 'c'
+    let pattern .= '\%<' . (a:position.collumn + 1 + index) . 'c'
+
+    let match_id = matchadd('Conceal', pattern, 10, -1, {'conceal': c})
+
+    if !exists('b:jumpsearch_match_ids')
+      let b:jumpsearch_match_ids = []
+    endif
+    let b:jumpsearch_match_ids += [match_id]
+    let index += 1
+  endfor
+endfunction
+
 function!jumpsearch#tags#get_jump_index_from_user(num_tags)
   let starting_key_to_tag_length = 
         \ jumpsearch#tags#get_starting_key_to_tag_length(a:num_tags)
