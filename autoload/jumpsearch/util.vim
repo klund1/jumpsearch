@@ -20,15 +20,40 @@ function! jumpsearch#util#escape_all_special_chars(string)
 endfunction
 
 function! jumpsearch#util#get_cursor()
-  return [line('.'), col('.')]
+  let position = {}
+  let position.window = winnr()
+  let position.line = line('.')
+  let position.collumn = col('.')
+  return position
+endfunction
+
+function! jumpsearch#util#get_all_windows()
+  let windows = []
+  windo let windows += [winnr()]
+  return windows
+endfunction
+
+function! jumpsearch#util#move_to_window(window)
+  exec a:window . 'wincmd w'
 endfunction
 
 function! jumpsearch#util#move_cursor(position)
-  call cursor(a:position[0], a:position[1])
+  call jumpsearch#util#move_to_window(a:position.window)
+  call cursor(a:position.line, a:position.collumn)
+endfunction
+
+function! jumpsearch#util#save_initial_position()
+  let g:jumpsearch_initial_window = winnr()
+  windo let b:jumpsearch_initial_cursor = jumpsearch#util#get_cursor()
+endfunction
+
+function! jumpsearch#util#reset_cursor_to_initial_position()
+  windo call jumpsearch#util#move_cursor(b:jumpsearch_initial_cursor)
+  call jumpsearch#util#move_to_window(g:jumpsearch_initial_window)
 endfunction
 
 function! jumpsearch#util#redraw()
-  call jumpsearch#util#move_cursor(b:jumpsearch_initial_cursor)
+  call jumpsearch#util#reset_cursor_to_initial_position()
   nohlsearch
   redraw
 endfunction

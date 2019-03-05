@@ -3,9 +3,9 @@ function! jumpsearch#search#run()
   let initial_scroll_offset = &so
   set so=0
 
-  let b:jumpsearch_initial_cursor = jumpsearch#util#get_cursor()
+  call jumpsearch#util#save_initial_position()
   if (!jumpsearch#search#do_search())
-    call jumpsearch#util#move_cursor(b:jumpsearch_initial_cursor)
+    call jumpsearch#util#reset_cursor_to_initial_position()
   endif
 
   call jumpsearch#highlighting#clear_highlighting()
@@ -37,10 +37,14 @@ function! jumpsearch#search#do_search()
   let num_jump_tags = len(match_positions)
   let index = 0
   let jump_tags = jumpsearch#tags#get_tags(num_jump_tags)
+  let modified_windows = []
   for match_position in match_positions
     call jumpsearch#util#move_cursor(match_position)
     let jump_tag = jump_tags[index]
     exec 'normal! R' . jump_tag
+    if count(modified_windows, match_position.window) == 0
+      let modified_windows += [match_position.window] 
+    endif
     call jumpsearch#highlighting#highlight(
           \ match_position, len(jump_tag), 'JumpSearchJump')
     let index += 1
@@ -49,13 +53,19 @@ function! jumpsearch#search#do_search()
 
   let jump_index = jumpsearch#tags#get_jump_index_from_user(num_jump_tags)
   
-  " This reverts all changes made to the buffer when jump tags were added.
-  exec 'normal! u'
+  " This reverts all changes made to all windows when jump tags were added.
+  for window in jumpsearch#util#get_all_windows()
+    if count(modified_windows, window)
+      call jumpsearch#util#move_to_window(window)
+      exec 'normal! u'
+    endif
+  endfor
 
   if jump_index < 0
     return 0
   endif
 
-  call jumpsearch#util#move_cursor(match_positions[jump_index])
+  let jump_position = match_positions[jump_index]
+  call jumpsearch#util#move_cursor(jump_position)
   return 1
 endfunction
