@@ -1,26 +1,9 @@
 function!jumpsearch#tags#add_tag(position, tag)
-  set conceallevel=1
-  set concealcursor=nc
-  hi! link Conceal JumpSearchJump
-
-
   let index = 0
   for c in split(a:tag, '\zs')
-    let pattern = ''
-    let pattern .= '\%' . a:position.line . 'l'
-    let pattern .= '\%>' . (a:position.collumn - 1 + index) . 'c'
-    let pattern .= '\%<' . (a:position.collumn + 1 + index) . 'c'
-
-    let match_id = matchadd('Conceal', pattern, 10, -1, {'conceal': c})
-
-    if !exists('g:jumpsearch_match_ids')
-      let g:jumpsearch_match_ids = {}
-    endif
-    if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
-      let g:jumpsearch_match_ids[winnr()] = []
-    endif
-    let g:jumpsearch_match_ids[winnr()] += [match_id]
-
+    let char_position = copy(a:position)
+    let char_position.collumn += index
+    call jumpsearch#highlighting#highlight(char_position, 1, 'Conceal', c)
     let index += 1
   endfor
 endfunction

@@ -1,6 +1,6 @@
 function! jumpsearch#highlighting#init()
-  hi JumpSearchPending ctermfg=0 ctermbg=222 cterm=NONE
-  hi JumpSearchEnd ctermfg=0 ctermbg=222 cterm=NONE
+  hi! link JumpSearchPending Search
+  hi! link JumpSearchEnd Search
   hi JumpSearchJump ctermfg=0 ctermbg=red cterm=NONE
 endfunction
 
@@ -23,13 +23,18 @@ function! jumpsearch#highlighting#clear_highlighting_in_window()
   let g:jumpsearch_match_ids[winnr()] = []
 endfunction
 
-function! jumpsearch#highlighting#highlight(position, length, match_group)
+function! jumpsearch#highlighting#highlight(position, length, match_group, ...)
   let pattern = ''
   let pattern .= '\%' . a:position.line . 'l'
   let pattern .= '\%>' . (a:position.collumn-1) . 'c'
   let pattern .= '\%<' . (a:position.collumn+a:length) . 'c'
 
-  let match_id = matchadd(a:match_group, pattern)
+  if a:0 > 0
+    let conceal_char = a:1
+    let match_id = matchadd(a:match_group, pattern, 10, -1, {'conceal': conceal_char})
+  else
+    let match_id = matchadd(a:match_group, pattern)
+  endif
 
   if !exists('g:jumpsearch_match_ids')
     let g:jumpsearch_match_ids = {}

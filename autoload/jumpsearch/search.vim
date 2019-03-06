@@ -1,15 +1,34 @@
 function! jumpsearch#search#run()
-  " Set the scroll offset to 0 temporarily to avoid moving the screen
+  call jumpsearch#util#save_initial_position()
+
+  " Save settings that need to change
   let initial_scroll_offset = &so
   set so=0
+  let initial_conceal_level = {}
+  let initial_conceal_cursor = {}
+  for window in jumpsearch#util#get_all_windows()
+    call jumpsearch#util#move_to_window(window)
+    let initial_conceal_level[string(window)] = &conceallevel
+    set conceallevel=1
+    let initial_conceal_cursor[string(window)] = &concealcursor
+    set concealcursor=nc
+  endfor
+  hi! link Conceal JumpSearchJump
 
-  call jumpsearch#util#save_initial_position()
   if (!jumpsearch#search#do_search())
     call jumpsearch#util#reset_cursor_to_initial_position()
   endif
 
   call jumpsearch#highlighting#clear_highlighting()
   let &so = initial_scroll_offset
+  let initial_window = winnr()
+  for window in jumpsearch#util#get_all_windows()
+    call jumpsearch#util#move_to_window(window)
+    let &conceallevel = initial_conceal_level[string(window)]
+    let &concealcursor = initial_conceal_cursor[string(window)]
+  endfor
+  call jumpsearch#util#move_to_window(initial_window)
+  hi! link Conceal Normal
 endfunction
 
 function! jumpsearch#search#do_search()
