@@ -13,10 +13,14 @@ function!jumpsearch#tags#add_tag(position, tag)
 
     let match_id = matchadd('Conceal', pattern, 10, -1, {'conceal': c})
 
-    if !exists('b:jumpsearch_match_ids')
-      let b:jumpsearch_match_ids = []
+    if !exists('g:jumpsearch_match_ids')
+      let g:jumpsearch_match_ids = {}
     endif
-    let b:jumpsearch_match_ids += [match_id]
+    if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
+      let g:jumpsearch_match_ids[winnr()] = []
+    endif
+    let g:jumpsearch_match_ids[winnr()] += [match_id]
+
     let index += 1
   endfor
 endfunction

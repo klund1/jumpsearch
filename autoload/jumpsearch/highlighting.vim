@@ -11,13 +11,16 @@ function! jumpsearch#highlighting#clear_highlighting()
 endfunction
 
 function! jumpsearch#highlighting#clear_highlighting_in_window()
-  if !exists('b:jumpsearch_match_ids')
+  if !exists('g:jumpsearch_match_ids')
     return
   endif
-  for match_id in b:jumpsearch_match_ids
+  if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
+    return
+  endif
+  for match_id in g:jumpsearch_match_ids[winnr()]
     call matchdelete(match_id)
   endfor
-  let b:jumpsearch_match_ids = []
+  let g:jumpsearch_match_ids[winnr()] = []
 endfunction
 
 function! jumpsearch#highlighting#highlight(position, length, match_group)
@@ -28,10 +31,13 @@ function! jumpsearch#highlighting#highlight(position, length, match_group)
 
   let match_id = matchadd(a:match_group, pattern)
 
-  if !exists('b:jumpsearch_match_ids')
-    let b:jumpsearch_match_ids = []
+  if !exists('g:jumpsearch_match_ids')
+    let g:jumpsearch_match_ids = {}
   endif
-  let b:jumpsearch_match_ids += [match_id]
+  if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
+    let g:jumpsearch_match_ids[winnr()] = []
+  endif
+  let g:jumpsearch_match_ids[winnr()] += [match_id]
 endfunction
 
 function! jumpsearch#highlighting#search_and_highlight(search, match_group)
