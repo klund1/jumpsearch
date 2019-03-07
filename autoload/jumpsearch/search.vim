@@ -1,4 +1,4 @@
-function! jumpsearch#search#run()
+function! jumpsearch#search#run(...)
   call jumpsearch#util#save_initial_position()
 
   " Save settings that need to change
@@ -15,7 +15,11 @@ function! jumpsearch#search#run()
   endfor
   hi! link Conceal JumpSearchJump
 
-  if (!jumpsearch#search#do_search())
+  let search = ""
+  if a:0 > 0
+    let search = a:1
+  endif
+  if (!jumpsearch#search#do_search(search))
     call jumpsearch#util#reset_cursor_to_initial_position()
   endif
 
@@ -31,25 +35,42 @@ function! jumpsearch#search#run()
   hi! link Conceal Normal
 endfunction
 
-function! jumpsearch#search#do_search()
-  call jumpsearch#highlighting#init()
+function! jumpsearch#search#get_search_from_user()
   let search = ""
   let char = nr2char(getchar())
+  echo "> " . search
   while char != ""
     let search .= char
+    echo "> " . search
     call jumpsearch#highlighting#search_and_highlight(
           \ search, 'JumpSearchPending')
     let char = jumpsearch#util#get_char_with_timeout(
           \ g:jumpsearch_search_complete_timeout)
   endwhile
+  return search
+endfunction
+
+
+function! jumpsearch#search#do_search(search)
+  call jumpsearch#highlighting#init()
+
+  let search = a:search
+  if search == ""
+    let search = jumpsearch#search#get_search_from_user()
+  endif
 
   if search == ""
     return 0
   endif
 
+  echo search
   let match_positions = jumpsearch#highlighting#search_and_highlight(
         \ search, 'JumpSearchEnd')
   if len(match_positions) == 0
+    return 0
+  endif
+
+  if len(match_positions) > g:jumpsearch_max_tags
     return 0
   endif
 
@@ -72,6 +93,7 @@ function! jumpsearch#search#do_search()
   if jump_index < 0
     return 0
   endif
+  echo
 
   let jump_position = match_positions[jump_index]
   call jumpsearch#util#move_cursor(jump_position)
