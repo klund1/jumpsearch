@@ -1,7 +1,8 @@
 function! jumpsearch#highlighting#init()
-  hi! link JumpSearchPending Search
-  hi! link JumpSearchEnd Search
-  hi JumpSearchJump ctermfg=0 ctermbg=red cterm=NONE
+  hi JumpSearchPending ctermfg=green cterm=BOLD
+  hi JumpSearchEnd ctermfg=grey cterm=BOLD
+  hi JumpSearchBg ctermfg=grey cterm=NONE
+  hi JumpSearchJump ctermfg=red cterm=BOLD
 endfunction
 
 function! jumpsearch#highlighting#clear_highlighting()
@@ -23,6 +24,23 @@ function! jumpsearch#highlighting#clear_highlighting_in_window()
   let g:jumpsearch_match_ids[winnr()] = []
 endfunction
 
+function! jumpsearch#highlighting#store_match_id(match_id)
+  if !exists('g:jumpsearch_match_ids')
+    let g:jumpsearch_match_ids = {}
+  endif
+  if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
+    let g:jumpsearch_match_ids[winnr()] = []
+  endif
+  let g:jumpsearch_match_ids[winnr()] += [a:match_id]
+endfunction
+
+
+function! jumpsearch#highlighting#highlight_window(match_group)
+  let pattern = '\%>' . line('w0') . 'l' . '\%<' . line('w$') . 'l'
+  let match_id = matchadd(a:match_group, pattern)
+  call jumpsearch#highlighting#store_match_id(match_id)
+endfunction
+
 function! jumpsearch#highlighting#highlight(position, length, match_group, ...)
   let pattern = ''
   let pattern .= '\%' . a:position.line . 'l'
@@ -36,13 +54,7 @@ function! jumpsearch#highlighting#highlight(position, length, match_group, ...)
     let match_id = matchadd(a:match_group, pattern)
   endif
 
-  if !exists('g:jumpsearch_match_ids')
-    let g:jumpsearch_match_ids = {}
-  endif
-  if count(keys(g:jumpsearch_match_ids), string(winnr())) == 0
-    let g:jumpsearch_match_ids[winnr()] = []
-  endif
-  let g:jumpsearch_match_ids[winnr()] += [match_id]
+  call jumpsearch#highlighting#store_match_id(match_id)
 endfunction
 
 function! jumpsearch#highlighting#search_and_highlight(search, match_group)
@@ -61,6 +73,7 @@ function! jumpsearch#highlighting#search_and_highlight(search, match_group)
 endfunction
 
 function! jumpsearch#highlighting#search_in_window(search, match_group)
+  call jumpsearch#highlighting#highlight_window('JumpSearchBg')
   let top_line = line('w0')
   let bottom_line = line('w$')
   let matches = []
